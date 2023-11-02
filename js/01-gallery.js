@@ -1,5 +1,4 @@
 import { galleryItems } from "./gallery-items.js";
-// Change code below this line
 
 const gallery = document.querySelector(".gallery");
 gallery.innerHTML = getGalleryMarkup();
@@ -27,10 +26,21 @@ function modalHandle(e) {
   const instance = basicLightbox.create(
     `<img src="${e.target.dataset.source}">`,
     {
-      onShow: () => window.addEventListener("keydown", closeByEsc),
-      onClose: () => window.removeEventListener("keydown", closeByEsc),
+      handler: null, // <<< This key is needed to store a pointer to the function that BIND will return.
+      // Below - we change the library functions onShow and onClose.
+      // because arrow functions don't have their own "this".
+      onShow(instance) {
+        this.handler = closeByEsc.bind(instance);
+        window.addEventListener("keydown", this.handler);
+      },
+      onClose() {
+        window.removeEventListener("keydown", this.handler);
+      },
     }
   );
-  const closeByEsc = (e) => e.code === "Escape" && instance.close();
   instance.show();
+}
+
+function closeByEsc(e) {
+  e.code === "Escape" && this.close();
 }
